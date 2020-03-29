@@ -15,34 +15,48 @@ module.exports = {
         target: 'http://101.200.46.29:20001',
         changeOrigin: true,
         pathRewrite: {
-          '^/menu': '/menu',
+          '^/menu': '/menu'
         }
       },
       '/about': {
         target: 'http://101.200.46.29:20001',
         changeOrigin: true,
         pathRewrite: {
-          '^/about': '/about',
+          '^/about': '/about'
         }
       },
       '/careful': {
         target: 'http://101.200.46.29:20001',
         changeOrigin: true,
         pathRewrite: {
-          '^/careful': '/careful',
+          '^/careful': '/careful'
         }
       },
       '/personal': {
         target: 'http://101.200.46.29:20001',
         changeOrigin: true,
         pathRewrite: {
-          '^/personal': '/personal',
+          '^/personal': '/personal'
         }
       },
+      '/api': {
+        target: 'http://101.200.46.29:20001',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': '/api'
+        }
+      }
+      // '/index': {
+      //   target: 'http://101.200.46.29:20001',
+      //   changeOrigin: true,
+      //   pathRewrite: {
+      //     '^/index': ''
+      //   }
+      // }
     },
 
     // Various Dev Server settings
-    host: '192.168.1.43', // can be overwritten by process.env.HOST
+    host: 'localhost', // can be overwritten by process.env.HOST
     port: 8083, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,

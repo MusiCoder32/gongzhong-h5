@@ -1,6 +1,5 @@
 <template>
   <div>
-    <van-nav-bar title="预约养护" />
     <van-notice-bar color="#1989fa"
                     background="#ecf9ff"
                     left-icon="info-o">
@@ -91,9 +90,7 @@ export default {
       boardselectshow: false,
       boradArr: [],
       actions: [
-        { name: '奥迪Q7', subname: '车牌号：川A497979' },
-        { name: '宝马X3', subname: '车牌号：川A497979' },
-        { name: '宝骏530', subname: '车牌号：川A497979' }
+    
       ],
       timesshowCalendar: false,
       maintenanceshowCalendar: false,
@@ -108,12 +105,80 @@ export default {
         plateNumber: ""
       },
       uploader: [],
+      
+      oepnId: "",
     }
   },
   mounted () {
     this.getwarranty_pro()
+    this.getcarlist()
+    
+    var userinfo = JSON.parse(localStorage.getItem("userinfo"));
+    if (userinfo == null) {
+      this.getopenID();
+    } else {
+      this.oepnId = userinfo.openid;
+      console.log(userinfo);
+    }
   },
   methods: {
+    
+    getUrlParam(name) {
+      let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+      let r = window.location.search.substr(1).match(reg); // 匹配目标参数
+      if (r != null) return decodeURIComponent(r[2]);
+      return null; // 返回参数值
+    },
+    getopenID() {
+      let code = this.$route.query.code || this.getUrlParam("code");
+      // var state = this.$route.query.state || this.getUrlParam('state')
+      var redirectUri = escape(window.location.href + "?state=true");
+      var APPID = "wxd5c04a0b457efd8f";
+      if (code) {
+        var params = {
+          code: code
+        };
+        this.axios
+          .get("/api/index/get_openid", { params: params })
+          .then(res => {
+            var data = res.data;
+            localStorage.setItem("userinfo", JSON.stringify(res.data));
+            this.oepnId = res.data.data.openid;
+            console.log(data);
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      } else {
+        var wxopenidurl =
+          "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" +
+          APPID +
+          "&redirect_uri=" +
+          redirectUri +
+          "&response_type=code&scope=snsapi_userinfo&state=true#wechat_redirect";
+        window.location.href = wxopenidurl;
+      }
+    },
+    getcarlist () {
+      this.actions = []
+      var openId = "null"
+      var params = {
+        openId: this.oepnId
+      }
+      this.axios.post("/careful/car_list", params)
+        .then(res => {
+          console.log(res);
+          var list = res.data.data.list;
+          list.forEach((i, k) => {
+            this.actions.push(
+              { name: i.models, subname: '车牌号：' + i.plateNumber, value: i.plateNumber },
+            )
+          })
+        })
+        .catch(err => {
+          console.error(err);
+        })
+    },
     // 保修项目
     getwarranty_pro () {
       this.project = []
@@ -140,6 +205,7 @@ export default {
       this.maintenanceshowCalendar = false;
     },
     onSubmit (values) {
+      this.boradparams.oepnId = this.openid;
       console.log(this.boradparams)
       this.axios.post('about/preserve_add', this.boradparams)
         .then(res => {
@@ -155,10 +221,11 @@ export default {
       console.log('submit', values);
     },
     onSelect (item) {
-      // 默认情况下点击选项时不会自动收起
+       // 默认情况下点击选项时不会自动收起
       // 可以通过 close-on-click-action 属性开启自动收起
       this.boardselectshow = false;
-      Toast(item.name);
+      this.boradparams.plateNumber = item.value;
+      this.boradArr = item.value.split('');
     },
     getboard (borad) {
       console.log(borad)

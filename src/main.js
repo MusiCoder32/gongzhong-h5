@@ -19,24 +19,6 @@ Vue.config.productionTip = false
 axios.defaults.baseURL = process.env.API_ROOT;
 axios.interceptors.request.use(
   config => {
-    if (config.method == 'post') {
-      var v = config.data;
-      // console.log(isFormData(config.data))
-      var isconfigBody = isFormData(config.data);
-      if (isconfigBody) {
-        config.data.append("openId", "1")
-      } else {
-        config.data = {
-          ...config.data,
-          openId: 1,
-        }
-      }
-    } else if (config.method == 'get') {
-      config.params = {
-        openId: 1,
-        ...config.params
-      }
-    }
     return config
   }, function (error) {
     console.log(error)

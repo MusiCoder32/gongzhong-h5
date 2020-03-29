@@ -1,23 +1,12 @@
 <template>
   <div>
-    <van-nav-bar title="养护列表"
-                 right-text="预约"
-                 left-arrow
-                 @click-left="onClickLeft"
-                 @click-right="onClickRight" />
     <div class="listCont">
-      <van-list v-model="loading"
-                :finished="finished"
-                @load="onLoad">
-        <div v-for="(item, index) in list"
-             :key="index">
-          <van-card :title="item.plateNumber"
-                    :thumb="gridImg.icon2">
+      <van-list v-model="loading" :finished="finished" @load="onLoad">
+        <div v-for="(item, index) in list" :key="index">
+          <van-card :title="item.plateNumber" :thumb="gridImg.icon2">
             <template #desc>
               <div>
-                <p class="cardDesc">
-                  预约时间：{{gettime(item.appointmentTime)}}
-                </p>
+                <p class="cardDesc">预约时间：{{gettime(item.appointmentTime)}}</p>
               </div>
             </template>
           </van-card>
@@ -28,9 +17,9 @@
   </div>
 </template>
 <script>
-import { Toast } from 'vant';
+import { Toast } from "vant";
 export default {
-  data () {
+  data() {
     return {
       loading: false,
       finished: false,
@@ -38,49 +27,95 @@ export default {
       gridImg: {
         icon1: require("../assets/img/icon (1).png"),
         icon2: require("../assets/img/icon (2).png"),
-        icon3: require("../assets/img/icon (3).png"),
-      }
+        icon3: require("../assets/img/icon (3).png")
+      },
+      oepnId: ""
+    };
+  },
+  mounted() {
+    this.getpreservelist();
+    var userinfo = JSON.parse(localStorage.getItem("userinfo"));
+    if (userinfo == null) {
+      this.getopenID();
+    } else {
+      this.oepnId = userinfo.openid;
+      console.log(userinfo);
     }
   },
-  mounted () {
-    this.getpreservelist()
-  },
   methods: {
-    gettime (time) {
-      return new Date(parseInt(time) * 1000).toLocaleString().replace(/:\d{1,2}$/, ' ');
+    gettime(time) {
+      return new Date(parseInt(time) * 1000)
+        .toLocaleString()
+        .replace(/:\d{1,2}$/, " ");
     },
-    onLoad () {
+    getUrlParam(name) {
+      let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); // 构造一个含有目标参数的正则表达式对象
+      let r = window.location.search.substr(1).match(reg); // 匹配目标参数
+      if (r != null) return decodeURIComponent(r[2]);
+      return null; // 返回参数值
+    },
+    getopenID() {
+      let code = this.$route.query.code || this.getUrlParam("code");
+      // var state = this.$route.query.state || this.getUrlParam('state')
+      var redirectUri = escape(window.location.href + "?state=true");
+      var APPID = "wxd5c04a0b457efd8f";
+      if (code) {
+        var params = {
+          code: code
+        };
+        this.axios
+          .get("/api/index/get_openid", { params: params })
+          .then(res => {
+            var data = res.data;
+            localStorage.setItem("userinfo", JSON.stringify(res.data));
+            this.oepnId = res.data.data.openid;
+            console.log(data);
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      } else {
+        var wxopenidurl =
+          "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" +
+          APPID +
+          "&redirect_uri=" +
+          redirectUri +
+          "&response_type=code&scope=snsapi_userinfo&state=true#wechat_redirect";
+        window.location.href = wxopenidurl;
+      }
+    },
+    onLoad() {
       // 异步更新数据
       this.loading = false;
       this.finished = true;
     },
-    onClickLeft () {
+    onClickLeft() {},
+    onClickRight() {
+      this.$router.push("maintain");
     },
-    onClickRight () {
-      this.$router.push('maintain')
-    },
-    getpreservelist () {
+    getpreservelist() {
       var params = {
-        "endTime": "99999999999",
-        "openId": "string",
-        "pageNum": 0,
-        "pageSize": 1000,
-        "startTime": "0"
-      }
-      this.axios.post("careful/preserve_select", params)
+        endTime: "99999999999",
+        openId: this.oepnId,
+        pageNum: 0,
+        pageSize: 1000,
+        startTime: "0"
+      };
+      this.axios
+        .post("careful/preserve_select", params)
         .then(res => {
           if (res.data.code !== 10000) {
             Toast.fail(res.data.msg);
           } else {
-            this.list = res.data.data.list
+            this.list = res.data.data.list;
           }
         })
         .catch(err => {
           console.error(err);
-        })
+        });
     }
-  },
-}
+  }
+};
 </script>
 <style scoped>
 .listCont {

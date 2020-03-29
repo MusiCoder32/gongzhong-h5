@@ -1,6 +1,5 @@
 <template>
   <div>
-    <van-nav-bar title="预约列表" />
     <div class="listCont">
       <van-list v-model="loading"
                 :finished="finished"

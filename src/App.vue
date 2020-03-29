@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <router-view />
-    <div class="footerNav">
+    <!-- <div class="footerNav">
       <van-grid :column-num="3">
         <van-grid-item to="/">
           <div style="text-align:center;">
@@ -34,7 +34,7 @@
           </div>
         </van-grid-item>
       </van-grid>
-    </div>
+    </div> -->
   </div>
 </template>
 
